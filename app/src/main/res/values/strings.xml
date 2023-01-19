@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MyCurrencyConveter</string>
+    <string name="symbol_equal">=</string>
+    <string name="one">1</string>
+</resources>
