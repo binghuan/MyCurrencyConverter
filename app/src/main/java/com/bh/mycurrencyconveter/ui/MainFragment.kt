@@ -10,8 +10,9 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bh.mycurrencyconveter.Injection
 import com.bh.mycurrencyconveter.databinding.FragmentMainBinding
 import com.bh.mycurrencyconveter.viewmodel.MainViewModel
 import com.bh.mycurrencyconveter.vo.ExchangeRateItem
@@ -21,15 +22,23 @@ class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
+        private val TAG = "BH_Lin_${MainFragment::class.java.simpleName}"
     }
 
-    //private val disposable = CompositeDisposable()
 
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel: MainViewModel by viewModels { viewModelFactory }
+
     private lateinit var binding: FragmentMainBinding
 
     private fun adapterOnClick(exchangeRateItem: ExchangeRateItem) {
 
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModelFactory = Injection.provideViewModelFactory(requireContext())
     }
 
     override fun onCreateView(
@@ -43,7 +52,7 @@ class MainFragment : Fragment() {
 
         binding.baseValue.doAfterTextChanged { inputString ->
             println("Input: $inputString")
-            var inputValue: Double = 0.0
+            var inputValue = 0.0
             if (inputString != null && inputString.isNotEmpty()) {
                 inputValue = inputString.toString().toDouble()
             }
@@ -75,7 +84,7 @@ class MainFragment : Fragment() {
                 }
             }
 
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        //viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         viewModel.currencyList.observe(
             viewLifecycleOwner
         ) { currencyList ->
@@ -98,7 +107,7 @@ class MainFragment : Fragment() {
             )
         }
 
-        viewModel.retrieveLatestExchangeRateInfo()
+        viewModel.fetchData()
 
         return binding.root
     }

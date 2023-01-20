@@ -3,16 +3,22 @@ package com.bh.mycurrencyconveter.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.bh.mycurrencyconveter.api.OpenExchangeRateService
+import com.bh.mycurrencyconveter.persistence.ExchangeRate
+import com.bh.mycurrencyconveter.persistence.ExchangeRateDao
 import com.bh.mycurrencyconveter.ui.main.OpenExchangeRateServiceInstance
 import com.bh.mycurrencyconveter.vo.ExchangeRateItem
 import com.bh.mycurrencyconveter.vo.ExchangeRatesAPIResponse
+import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class MainViewModel : ViewModel() {
+class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
     companion object {
         const val DEFAULT_BASE_CURRENCY = "USD"
@@ -58,11 +64,22 @@ class MainViewModel : ViewModel() {
         return _positionForUSD
     }
 
-    fun setExchangeRates(rates: HashMap<String, Double>) {
+    fun setExchangeRates(rates: HashMap<String, Double>, timestamp: Long?) {
         exchangeRates.postValue(rates)
+
+        val dataList = ArrayList<ExchangeRate>()
+        for ((currency, amount) in rates) {
+            println("$currency = $amount")
+            dataList.add(ExchangeRate(
+                currency = currency,
+                usdConvertibleAmount = amount,
+                timestamp = timestamp ?: -1
+            ))
+        }
+        dataSource.insertExchangeRateList(dataList)
     }
 
-    fun getCurrencyList(): ArrayList<String>? {
+    private fun getCurrencyList(): ArrayList<String>? {
         return currencyList.value
     }
 
@@ -78,7 +95,34 @@ class MainViewModel : ViewModel() {
         currencyList.postValue(currencies)
     }
 
-    fun retrieveLatestExchangeRateInfo() {
+    fun fetchData() {
+        // Subscribe to the emissions of the user name from the view model.
+        // Update the user name text view, at every onNext emission.
+        // In case of error, log the exception.
+        val disposable = CompositeDisposable()
+        disposable.add(
+            fetchDataFromDB()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        println("Fetched data: $it")
+                        if (it.isEmpty()) {
+                            retrieveLatestExchangeRateInfo()
+                        }
+                    },
+                    { error ->
+                        println("Unable to fetchDataFromDB: $error")
+                    })
+        )
+    }
+
+    private fun fetchDataFromDB(): Flowable<List<ExchangeRate>> {
+        return dataSource.getAllExchangeRates()
+    }
+
+    private fun retrieveLatestExchangeRateInfo() {
+
         val service = OpenExchangeRateServiceInstance.retrofitInstance!!.create(
             OpenExchangeRateService::class.java
         )
@@ -88,14 +132,19 @@ class MainViewModel : ViewModel() {
                 response: Response<ExchangeRatesAPIResponse?>
             ) {
                 println("Received Response")
+
+
+                val timestamp = response.body()?.timestamp
                 response.body()?.rates?.let {
                     extractCurrencies(it)
-                    setExchangeRates(it)
+                    setExchangeRates(it, timestamp)
                 }
+
             }
 
             override fun onFailure(call: Call<ExchangeRatesAPIResponse?>, t: Throwable) {
                 println(t.message ?: "")
+
             }
         })
     }
