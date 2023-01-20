@@ -22,7 +22,11 @@ import retrofit2.http.GET
 
 interface OpenExchangeRateService {
 
-    @get:GET("/api/latest.json?app_id=a9b9c96f959b4a9396929dac01de540c&base=USD")
+    companion object {
+        const val APP_ID = "a9b9c96f959b4a9396929dac01de540c"
+    }
+
+    @get:GET("/api/latest.json?app_id=$APP_ID&base=USD")
     val getExchangeRateInfo: Call<ExchangeRatesAPIResponse>
 
 }
