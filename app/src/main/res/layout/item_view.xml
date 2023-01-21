@@ -5,29 +5,29 @@
 
 
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:paddingBottom="5dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp">
 
         <TextView
             android:id="@+id/baseCurrency"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:gravity="start"
-            android:text="EUR"
             android:layout_marginStart="15dp"
+            android:gravity="start"
+            android:text="@string/triple_dash"
             android:textSize="24sp" />
 
         <TextView
-            android:maxLines="1"
-            android:layout_marginStart="5dp"
             android:id="@+id/baseValue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
             android:layout_marginEnd="15dp"
             android:layout_weight="1"
             android:gravity="start"
-            android:text="1"
+            android:maxLines="1"
+            android:text="@string/one"
             android:textSize="24sp" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
