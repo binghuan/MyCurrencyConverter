@@ -140,9 +140,9 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                             retrieveLatestExchangeRateInfo()
                         } else {
                             extractCurrencies(listOfExchangeRate)
-                            val dataMap = listOfExchangeRate.map {
+                            val dataMap = listOfExchangeRate.associate {
                                 it.currency to it.usdConvertibleAmount
-                            }.toMap()
+                            }
                             exchangeRates.postValue(dataMap)
                         }
                     }
