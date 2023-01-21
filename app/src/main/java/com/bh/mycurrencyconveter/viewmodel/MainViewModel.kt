@@ -125,29 +125,30 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
     fun fetchData() {
 
-        disposable.add(fetchDataFromDB().subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread()).subscribe({ listOfExchangeRate ->
-                println("Fetched data: $listOfExchangeRate")
-                if (listOfExchangeRate.isEmpty()) {
-                    println("!! There is no data in database. we should fetch data from network.")
-                    retrieveLatestExchangeRateInfo()
-                } else {
-                    println("!! There is data in database. we need to re-use it.")
-
-                    listOfExchangeRate.first().timestamp
-                    if (dataListRateLimit.shouldFetch("EX_RATE")) {
+        disposable.add(
+            fetchDataFromDB().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe({ listOfExchangeRate ->
+                    println("Fetched data: $listOfExchangeRate")
+                    if (listOfExchangeRate.isEmpty()) {
+                        println("!! There is no data in database. we should fetch data from network.")
                         retrieveLatestExchangeRateInfo()
                     } else {
-                        extractCurrencies(listOfExchangeRate)
-                        val dataMap = listOfExchangeRate.map {
-                            it.currency to it.usdConvertibleAmount
-                        }.toMap()
-                        exchangeRates.postValue(dataMap)
+                        println("!! There is data in database. we need to re-use it.")
+
+                        listOfExchangeRate.first().timestamp
+                        if (dataListRateLimit.shouldFetch("EX_RATE")) {
+                            retrieveLatestExchangeRateInfo()
+                        } else {
+                            extractCurrencies(listOfExchangeRate)
+                            val dataMap = listOfExchangeRate.map {
+                                it.currency to it.usdConvertibleAmount
+                            }.toMap()
+                            exchangeRates.postValue(dataMap)
+                        }
                     }
-                }
-            }, { error ->
-                println("Unable to fetchDataFromDB: $error")
-            })
+                }, { error ->
+                    println("Unable to fetchDataFromDB: $error")
+                })
         )
     }
 
@@ -170,12 +171,10 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                     extractCurrencies(it)
                     setExchangeRates(it, timestamp)
                 }
-
             }
 
             override fun onFailure(call: Call<ExchangeRatesAPIResponse?>, t: Throwable) {
                 println(t.message ?: "")
-
             }
         })
     }
@@ -201,7 +200,6 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                     val currencyToUSD = 1 / exchangeRate!!
                     var convertedValue = (baseCurrencyToUSD / currencyToUSD * inputValue)
                     if (currency == "USD") {
-                        println("hit")
                         convertedValue = baseExchangeRate * inputValue
                     }
 
