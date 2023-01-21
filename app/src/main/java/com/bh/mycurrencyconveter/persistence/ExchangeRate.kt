@@ -2,7 +2,6 @@ package com.bh.mycurrencyconveter.persistence
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 @Entity(tableName = "exchange_rates", primaryKeys = ["currency", "timestamp"])
 data class ExchangeRate(

@@ -15,16 +15,15 @@ abstract class ExchangeRateDatabase : RoomDatabase() {
 
     companion object {
 
-        @Volatile private var INSTANCE: ExchangeRateDatabase? = null
+        @Volatile
+        private var INSTANCE: ExchangeRateDatabase? = null
 
-        fun getInstance(context: Context): ExchangeRateDatabase =
-                INSTANCE ?: synchronized(this) {
-                    INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
-                }
+        fun getInstance(context: Context): ExchangeRateDatabase = INSTANCE ?: synchronized(this) {
+            INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
+        }
 
-        private fun buildDatabase(context: Context) =
-                Room.databaseBuilder(context.applicationContext,
-                        ExchangeRateDatabase::class.java, "Sample.db")
-                        .build()
+        private fun buildDatabase(context: Context) = Room.databaseBuilder(
+            context.applicationContext, ExchangeRateDatabase::class.java, "Sample.db"
+        ).build()
     }
 }

@@ -1,6 +1,5 @@
 package com.bh.mycurrencyconveter.ui
 
-import ExchangeRateInfoAdapter
 import android.R
 import android.os.Bundle
 import android.view.LayoutInflater

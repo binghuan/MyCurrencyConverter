@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.bh.mycurrencyconveter.api.OpenExchangeRateService
 import com.bh.mycurrencyconveter.persistence.ExchangeRate
 import com.bh.mycurrencyconveter.persistence.ExchangeRateDao
-import com.bh.mycurrencyconveter.ui.main.OpenExchangeRateServiceInstance
+import com.bh.mycurrencyconveter.api.OpenExchangeRateServiceInstance
+import com.bh.mycurrencyconveter.util.RateLimiter
 import com.bh.mycurrencyconveter.vo.ExchangeRateItem
 import com.bh.mycurrencyconveter.vo.ExchangeRatesAPIResponse
 import io.reactivex.Flowable
@@ -15,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.concurrent.TimeUnit
 
 class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
@@ -47,8 +49,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
     }
 
     private fun getItemPositionTargetCurrency(
-        currencies: List<String>,
-        targetCurrency: String
+        currencies: List<String>, targetCurrency: String
     ): Int {
         for ((index, value) in currencies.withIndex()) {
             if (value == targetCurrency) {
@@ -70,9 +71,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
             println("$currency = $amount")
             dataList.add(
                 ExchangeRate(
-                    currency = currency,
-                    usdConvertibleAmount = amount,
-                    timestamp = timestamp ?: -1
+                    currency = currency, usdConvertibleAmount = amount, timestamp = timestamp ?: -1
                 )
             )
         }
@@ -84,16 +83,12 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         // Subscribe to updating the user name.
         // Enable back the button once the user name has been updated
         disposable.add(
-            dataSource.insertExchangeRateList(dataList)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        println("Data has been inserted. ")
-                    },
-                    { error ->
-                        println("Unable to update username $error")
-                    })
+            dataSource.insertExchangeRateList(dataList).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe({
+                    println("Data has been inserted. ")
+                }, { error ->
+                    println("Unable to update username $error")
+                })
         )
     }
 
@@ -124,34 +119,35 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         currencyList.postValue(currencies)
     }
 
+    private val dataListRateLimit = RateLimiter<String>(30, TimeUnit.MINUTES)
     private val disposable = CompositeDisposable()
 
+
     fun fetchData() {
-        // Subscribe to the emissions of the user name from the view model.
-        // Update the user name text view, at every onNext emission.
-        // In case of error, log the exception.
-        disposable.add(
-            fetchDataFromDB()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { listOfExchangeRate ->
-                        println("Fetched data: $listOfExchangeRate")
-                        if (listOfExchangeRate.isEmpty()) {
-                            println("!! There is no data in database. we should fetch data from network.")
-                            retrieveLatestExchangeRateInfo()
-                        } else {
-                            println("!! There is data in database. we need to re-use it.")
-                            extractCurrencies(listOfExchangeRate)
-                            val dataMap = listOfExchangeRate.map {
-                                it.currency to it.usdConvertibleAmount
-                            }.toMap()
-                            exchangeRates.postValue(dataMap)
-                        }
-                    },
-                    { error ->
-                        println("Unable to fetchDataFromDB: $error")
-                    })
+
+        disposable.add(fetchDataFromDB().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread()).subscribe({ listOfExchangeRate ->
+                println("Fetched data: $listOfExchangeRate")
+                if (listOfExchangeRate.isEmpty()) {
+                    println("!! There is no data in database. we should fetch data from network.")
+                    retrieveLatestExchangeRateInfo()
+                } else {
+                    println("!! There is data in database. we need to re-use it.")
+
+                    listOfExchangeRate.first().timestamp
+                    if (dataListRateLimit.shouldFetch("EX_RATE")) {
+                        retrieveLatestExchangeRateInfo()
+                    } else {
+                        extractCurrencies(listOfExchangeRate)
+                        val dataMap = listOfExchangeRate.map {
+                            it.currency to it.usdConvertibleAmount
+                        }.toMap()
+                        exchangeRates.postValue(dataMap)
+                    }
+                }
+            }, { error ->
+                println("Unable to fetchDataFromDB: $error")
+            })
         )
     }
 
@@ -166,8 +162,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         )
         service.getExchangeRateInfo.enqueue(object : Callback<ExchangeRatesAPIResponse?> {
             override fun onResponse(
-                call: Call<ExchangeRatesAPIResponse?>,
-                response: Response<ExchangeRatesAPIResponse?>
+                call: Call<ExchangeRatesAPIResponse?>, response: Response<ExchangeRatesAPIResponse?>
             ) {
                 println("Received Response")
                 val timestamp = response.body()?.timestamp
@@ -186,8 +181,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
     }
 
     fun calculateExchangeRateForCurrencies(
-        inputValue: Double = 0.0,
-        baseCurrency: String = "USD"
+        inputValue: Double = 0.0, baseCurrency: String = "USD"
     ) {
 
         val exchangeRates = getExchangeRates()
