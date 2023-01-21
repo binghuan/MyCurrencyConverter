@@ -21,7 +21,6 @@ class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
-        private val TAG = "BH_Lin_${MainFragment::class.java.simpleName}"
     }
 
 
@@ -46,7 +45,7 @@ class MainFragment : Fragment() {
 
         binding = FragmentMainBinding.inflate(inflater)
         exchangeRateInfoAdapter = ExchangeRateInfoAdapter { item -> adapterOnClick(item) }
-        binding.exchangeRateList.layoutManager = LinearLayoutManager(context);
+        binding.exchangeRateList.layoutManager = LinearLayoutManager(context)
         binding.exchangeRateList.adapter = exchangeRateInfoAdapter
 
         binding.baseValue.doAfterTextChanged { inputString ->

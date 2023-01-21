@@ -24,11 +24,11 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
     companion object {
         private val TAG = "BH_Lin_${MainViewModel::class.java.simpleName}"
         const val DEFAULT_BASE_CURRENCY = "USD"
-        const val TIMEOUT_TO_FETCH_DATA_IN_MINUTES = 1
+        const val TIMEOUT_TO_FETCH_DATA_IN_MINUTES = 30
     }
 
     private var _positionForUSD: Int = 0
-    private var baseCurrency = MutableLiveData<String>(DEFAULT_BASE_CURRENCY)
+    private var baseCurrency = MutableLiveData(DEFAULT_BASE_CURRENCY)
     var exchangeRates = MutableLiveData<Map<String, Double>>()
     var calculatedExchangeRates = MutableLiveData<ArrayList<ExchangeRateItem>>()
 

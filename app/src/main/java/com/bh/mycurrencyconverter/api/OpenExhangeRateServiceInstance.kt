@@ -3,9 +3,6 @@ package com.bh.mycurrencyconverter.api
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-// *** UNCOMMENT THE LINE BELOW FOR APPROOV ***
-//import io.approov.service.retrofit.ApproovService
-
 object OpenExchangeRateServiceInstance {
 
     private const val BASE_URL = "https://openexchangerates.org/"
