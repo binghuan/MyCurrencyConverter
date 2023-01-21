@@ -1,4 +1,4 @@
-package com.bh.mycurrencyconveter.api
+package com.bh.mycurrencyconverter.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

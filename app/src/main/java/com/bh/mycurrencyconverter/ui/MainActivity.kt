@@ -1,8 +1,8 @@
-package com.bh.mycurrencyconveter.ui
+package com.bh.mycurrencyconverter.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.bh.mycurrencyconveter.R
+import com.bh.mycurrencyconverter.R
 
 class MainActivity : AppCompatActivity() {
 

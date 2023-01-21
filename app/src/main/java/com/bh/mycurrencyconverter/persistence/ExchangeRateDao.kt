@@ -1,4 +1,4 @@
-package com.bh.mycurrencyconveter.persistence
+package com.bh.mycurrencyconverter.persistence
 
 import androidx.room.Dao
 import androidx.room.Insert

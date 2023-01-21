@@ -1,4 +1,4 @@
-package com.bh.mycurrencyconveter
+package com.bh.mycurrencyconverter
 
 import org.junit.Test
 

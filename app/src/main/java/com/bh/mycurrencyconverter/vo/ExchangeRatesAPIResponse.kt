@@ -1,4 +1,4 @@
-package com.bh.mycurrencyconveter.vo
+package com.bh.mycurrencyconverter.vo
 
 import com.google.gson.annotations.SerializedName
 

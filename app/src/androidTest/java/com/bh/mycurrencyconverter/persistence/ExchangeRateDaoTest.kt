@@ -1,20 +1,4 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.bh.mycurrencyconveter.persistence
+package com.bh.mycurrencyconverter.persistence
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
@@ -27,7 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Test the implementation of [UserDao]
+ * Test the implementation of [ExchangeRateDao]
  */
 @RunWith(AndroidJUnit4::class)
 class ExchangeRateDaoTest {
@@ -69,24 +53,26 @@ class ExchangeRateDaoTest {
             ExchangeRate(
                 currency = "TWD",
                 usdConvertibleAmount = 30.0,
-                timestamp = 1674290532064
+                timestamp = 1674290532064,
+                lastFetchTime = 1674290532064,
             )
         )
         dataList.add(
             ExchangeRate(
                 currency = "EUR",
                 usdConvertibleAmount = 0.92,
-                timestamp = 1674290532064
+                timestamp = 1674290532064,
+                lastFetchTime = 1674290532064,
             )
         )
 
-        // When inserting list of exchange rates new user in the data source
+        // When inserting list of exchange rates in the data source
         database.exchangeRateDao().insertExchangeRateList(dataList).blockingAwait()
 
-        // When subscribing to the emissions of the user
+        // When subscribing to the emissions of the exchange rate
         database.exchangeRateDao().getAllExchangeRates()
             .test()
-            // assertValue asserts that there was only one emission of the user
+            // assertValue asserts that there was only one emission of the exchange rate
             .assertValue {
                 (it[0].currency == "TWD" || it[0].currency == "EUR") &&
                         (it[1].currency == "TWD" || it[1].currency == "EUR")
@@ -98,44 +84,54 @@ class ExchangeRateDaoTest {
         // When inserting a new data in the data source
         database.exchangeRateDao().insertExchangeRate(EX_RATE).blockingAwait()
 
-        // When subscribing to the emissions of the user
+        // When subscribing to the emissions of the exchange rate
         database.exchangeRateDao().getExchangeRateByCurrency(EX_RATE.currency)
             .test()
-            // assertValue asserts that there was only one emission of the user
+            // assertValue asserts that there was only one emission of the exchange rate
             .assertValue { it.currency == EX_RATE.currency && it.usdConvertibleAmount == EX_RATE.usdConvertibleAmount }
     }
 
     @Test
     fun updateAndGetExchangeRate() {
-        // Given that we have a user in the data source
+        // Given that we have a exchange rate in the data source
         database.exchangeRateDao().insertExchangeRate(EX_RATE).blockingAwait()
 
-        // When we are updating the name of the user
-        val updatedExchangeRate = ExchangeRate(EX_RATE.currency, 31.0, 1674244524970)
+        // When we are updating the usdConvertibleAmount of the exchange rate
+        val updatedExchangeRate = ExchangeRate(
+            currency = EX_RATE.currency,
+            usdConvertibleAmount = 31.0,
+            timestamp = 1674244524970,
+            lastFetchTime = 1674244524970,
+        )
         database.exchangeRateDao().insertExchangeRate(updatedExchangeRate).blockingAwait()
 
-        // When subscribing to the emissions of the user
+        // When subscribing to the emissions of the exchange rate
         database.exchangeRateDao().getExchangeRateByCurrency(EX_RATE.currency)
             .test()
-            // assertValue asserts that there was only one emission of the user
+            // assertValue asserts that there was only one emission of the exchange rate
             .assertValue { it.currency == EX_RATE.currency && it.usdConvertibleAmount == 31.0 }
     }
 
     @Test
     fun deleteAndGetExchangeRate() {
-        // Given that we have a user in the data source
+        // Given that we have a exchange rate in the data source
         database.exchangeRateDao().insertExchangeRate(EX_RATE).blockingAwait()
 
-        //When we are deleting all users
+        //When we are deleting all exchange rates
         database.exchangeRateDao().deleteAllExchangeRates()
-        // When subscribing to the emissions of the user
+        // When subscribing to the emissions of the exchange rate
         database.exchangeRateDao().getExchangeRateByCurrency(EX_RATE.currency)
             .test()
-            // check that there's no user emitted
+            // check that there's no exchange rate emitted
             .assertNoValues()
     }
 
     companion object {
-        private val EX_RATE = ExchangeRate("TWD", 30.0, 1674243912921)
+        private val EX_RATE = ExchangeRate(
+            currency = "TWD",
+            usdConvertibleAmount = 30.0,
+            timestamp = 1674243912921,
+            lastFetchTime = 1674243912921,
+        )
     }
 }

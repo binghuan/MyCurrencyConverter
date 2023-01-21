@@ -1,6 +1,6 @@
-package com.bh.mycurrencyconveter.ui
+package com.bh.mycurrencyconverter.ui
 
-import android.R
+import android.R.layout.simple_spinner_dropdown_item
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,10 +11,10 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bh.mycurrencyconveter.Injection
-import com.bh.mycurrencyconveter.databinding.FragmentMainBinding
-import com.bh.mycurrencyconveter.viewmodel.MainViewModel
-import com.bh.mycurrencyconveter.vo.ExchangeRateItem
+import com.bh.mycurrencyconverter.Injection
+import com.bh.mycurrencyconverter.databinding.FragmentMainBinding
+import com.bh.mycurrencyconverter.viewmodel.MainViewModel
+import com.bh.mycurrencyconverter.vo.ExchangeRateItem
 
 
 class MainFragment : Fragment() {
@@ -57,7 +57,7 @@ class MainFragment : Fragment() {
             }
             viewModel.calculateExchangeRateForCurrencies(
                 inputValue = inputValue,
-                baseCurrency = viewModel.getBaseCurrency() ?: viewModel.getDefaultBaseCurrency()
+                baseCurrency = viewModel.getBaseCurrency() ?: MainViewModel.DEFAULT_BASE_CURRENCY
             )
         }
         binding.targetCurrencySelector.onItemSelectedListener =
@@ -89,10 +89,10 @@ class MainFragment : Fragment() {
         ) { currencyList ->
             val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
                 requireContext(),
-                R.layout.simple_spinner_dropdown_item,
+                simple_spinner_dropdown_item,
                 currencyList
             )
-            adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+            adapter.setDropDownViewResource(simple_spinner_dropdown_item)
             binding.targetCurrencySelector.adapter = adapter
             binding.targetCurrencySelector.setSelection(viewModel.getPositionForUSD())
         }
@@ -102,7 +102,7 @@ class MainFragment : Fragment() {
         viewModel.exchangeRates.observe(viewLifecycleOwner) {
             viewModel.calculateExchangeRateForCurrencies(
                 inputValue = binding.baseValue.text.toString().toDouble(),
-                baseCurrency = viewModel.getBaseCurrency() ?: viewModel.getDefaultBaseCurrency()
+                baseCurrency = viewModel.getBaseCurrency() ?: MainViewModel.DEFAULT_BASE_CURRENCY
             )
         }
 

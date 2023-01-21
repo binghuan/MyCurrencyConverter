@@ -1,9 +1,9 @@
-package com.bh.mycurrencyconveter
+package com.bh.mycurrencyconverter
 
 import android.content.Context
-import com.bh.mycurrencyconveter.persistence.ExchangeRateDao
-import com.bh.mycurrencyconveter.persistence.ExchangeRateDatabase
-import com.bh.mycurrencyconveter.ui.ViewModelFactory
+import com.bh.mycurrencyconverter.persistence.ExchangeRateDao
+import com.bh.mycurrencyconverter.persistence.ExchangeRateDatabase
+import com.bh.mycurrencyconverter.ui.ViewModelFactory
 
 /**
  * Enables injection of data sources.

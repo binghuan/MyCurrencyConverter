@@ -1,9 +1,9 @@
-package com.bh.mycurrencyconveter.ui
+package com.bh.mycurrencyconverter.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.bh.mycurrencyconveter.persistence.ExchangeRateDao
-import com.bh.mycurrencyconveter.viewmodel.MainViewModel
+import com.bh.mycurrencyconverter.persistence.ExchangeRateDao
+import com.bh.mycurrencyconverter.viewmodel.MainViewModel
 
 /**
  * Factory for ViewModels

@@ -1,4 +1,4 @@
-package com.bh.mycurrencyconveter.ui
+package com.bh.mycurrencyconverter.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bh.mycurrencyconveter.R
-import com.bh.mycurrencyconveter.vo.ExchangeRateItem
+import com.bh.mycurrencyconverter.vo.ExchangeRateItem
+import com.bh.mycurrencyconverter.R
 
 
 class ExchangeRateInfoAdapter(private val onClick: (ExchangeRateItem) -> Unit) :

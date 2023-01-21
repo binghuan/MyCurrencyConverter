@@ -1,14 +1,15 @@
-package com.bh.mycurrencyconveter.viewmodel
+package com.bh.mycurrencyconverter.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.bh.mycurrencyconveter.api.OpenExchangeRateService
-import com.bh.mycurrencyconveter.persistence.ExchangeRate
-import com.bh.mycurrencyconveter.persistence.ExchangeRateDao
-import com.bh.mycurrencyconveter.api.OpenExchangeRateServiceInstance
-import com.bh.mycurrencyconveter.util.RateLimiter
-import com.bh.mycurrencyconveter.vo.ExchangeRateItem
-import com.bh.mycurrencyconveter.vo.ExchangeRatesAPIResponse
+import com.bh.mycurrencyconverter.api.OpenExchangeRateService
+import com.bh.mycurrencyconverter.persistence.ExchangeRate
+import com.bh.mycurrencyconverter.persistence.ExchangeRateDao
+import com.bh.mycurrencyconverter.api.OpenExchangeRateServiceInstance
+import com.bh.mycurrencyconverter.util.RateLimiter
+import com.bh.mycurrencyconverter.vo.ExchangeRateItem
+import com.bh.mycurrencyconverter.vo.ExchangeRatesAPIResponse
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -21,11 +22,9 @@ import java.util.concurrent.TimeUnit
 class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
     companion object {
+        private val TAG = "BH_Lin_${MainViewModel::class.java.simpleName}"
         const val DEFAULT_BASE_CURRENCY = "USD"
-    }
-
-    fun getDefaultBaseCurrency(): String {
-        return DEFAULT_BASE_CURRENCY
+        const val TIMEOUT_TO_FETCH_DATA_IN_MINUTES = 1
     }
 
     private var _positionForUSD: Int = 0
@@ -63,15 +62,17 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         return _positionForUSD
     }
 
-    fun setExchangeRates(rates: HashMap<String, Double>, timestamp: Long?) {
+    fun setExchangeRates(rates: HashMap<String, Double>, timestamp: Long?, lastFetchTime: Long) {
         exchangeRates.postValue(rates)
 
         val dataList = ArrayList<ExchangeRate>()
         for ((currency, amount) in rates) {
-            println("$currency = $amount")
             dataList.add(
                 ExchangeRate(
-                    currency = currency, usdConvertibleAmount = amount, timestamp = timestamp ?: -1
+                    currency = currency,
+                    usdConvertibleAmount = amount,
+                    timestamp = timestamp ?: -1,
+                    lastFetchTime = lastFetchTime
                 )
             )
         }
@@ -85,9 +86,9 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         disposable.add(
             dataSource.insertExchangeRateList(dataList).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe({
-                    println("Data has been inserted. ")
+                    Log.v(TAG, "Data has been inserted. ")
                 }, { error ->
-                    println("Unable to update username $error")
+                    Log.v(TAG, "Unable to update username $error")
                 })
         )
     }
@@ -96,50 +97,53 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         return currencyList.value
     }
 
-    private fun extractCurrencies(rates: List<ExchangeRate>) {
+    private fun setCurrencyList(currencies: ArrayList<String>) {
+        _positionForUSD = getItemPositionTargetCurrency(currencies, "USD")
+        currencyList.postValue(currencies)
+    }
+
+    private fun extractCurrencies(rates: List<ExchangeRate>): ArrayList<String> {
         val currencies = ArrayList<String>()
         for (exchangeRate in rates) {
             currencies.add(exchangeRate.currency)
         }
-        println("currencyList = $currencies")
         currencies.sort()
-        _positionForUSD = getItemPositionTargetCurrency(currencies, "USD")
-        currencyList.postValue(currencies)
+        return currencies
     }
 
-    private fun extractCurrencies(rates: HashMap<String, Double>) {
+    private fun extractCurrencies(rates: HashMap<String, Double>): ArrayList<String> {
         val currencies = ArrayList<String>()
-        for ((key, value) in rates) {
-            println("$key = $value")
+        for ((key, _) in rates) {
             currencies.add(key)
         }
-        println("currencyList = $currencies")
         currencies.sort()
-        _positionForUSD = getItemPositionTargetCurrency(currencies, "USD")
-        currencyList.postValue(currencies)
+        return currencies
     }
 
-    private val dataListRateLimit = RateLimiter<String>(30, TimeUnit.MINUTES)
+    private val dataListRateLimit =
+        RateLimiter(TIMEOUT_TO_FETCH_DATA_IN_MINUTES, TimeUnit.MINUTES)
     private val disposable = CompositeDisposable()
-
 
     fun fetchData() {
 
-        disposable.add(
-            fetchDataFromDB().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe({ listOfExchangeRate ->
-                    println("Fetched data: $listOfExchangeRate")
-                    if (listOfExchangeRate.isEmpty()) {
-                        println("!! There is no data in database. we should fetch data from network.")
-                        retrieveLatestExchangeRateInfo()
-                    } else {
-                        println("!! There is data in database. we need to re-use it.")
+        Log.v(TAG, "+++ fetchData +++")
 
-                        listOfExchangeRate.first().timestamp
-                        if (dataListRateLimit.shouldFetch("EX_RATE")) {
-                            retrieveLatestExchangeRateInfo()
+        disposable.add(
+            fetchDataFromDB().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ listOfExchangeRate ->
+                    if (listOfExchangeRate.isEmpty()) {
+                        Log.v(
+                            TAG,
+                            "X> There is no data in database. we should fetch data from network."
+                        )
+                        fetchDataFromNetwork()
+                    } else {
+                        Log.v(TAG, "O> There is data in database. we need to re-use it.")
+                        val lastFetchTime = listOfExchangeRate.first().lastFetchTime
+                        if (dataListRateLimit.shouldFetch(lastFetched = lastFetchTime)) {
+                            fetchDataFromNetwork()
                         } else {
-                            extractCurrencies(listOfExchangeRate)
+                            setCurrencyList(extractCurrencies(listOfExchangeRate))
                             val dataMap = listOfExchangeRate.associate {
                                 it.currency to it.usdConvertibleAmount
                             }
@@ -147,16 +151,18 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                         }
                     }
                 }, { error ->
-                    println("Unable to fetchDataFromDB: $error")
+                    Log.v(TAG, "Unable to fetchDataFromDB: $error")
                 })
         )
     }
 
     private fun fetchDataFromDB(): Flowable<List<ExchangeRate>> {
+        Log.v(TAG, "+++ fetchDataFromDB +++")
         return dataSource.getAllExchangeRates()
     }
 
-    private fun retrieveLatestExchangeRateInfo() {
+    private fun fetchDataFromNetwork() {
+        Log.v(TAG, "+++ fetchDataFromNetwork +++")
 
         val service = OpenExchangeRateServiceInstance.retrofitInstance!!.create(
             OpenExchangeRateService::class.java
@@ -165,16 +171,17 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
             override fun onResponse(
                 call: Call<ExchangeRatesAPIResponse?>, response: Response<ExchangeRatesAPIResponse?>
             ) {
-                println("Received Response")
-                val timestamp = response.body()?.timestamp
+                Log.v(TAG, "Data was received. ")
+                val timestampForData = response.body()?.timestamp
                 response.body()?.rates?.let {
-                    extractCurrencies(it)
-                    setExchangeRates(it, timestamp)
+                    setCurrencyList(extractCurrencies(it))
+                    val lastFetchTime = System.currentTimeMillis()
+                    setExchangeRates(it, timestampForData, lastFetchTime)
                 }
             }
 
             override fun onFailure(call: Call<ExchangeRatesAPIResponse?>, t: Throwable) {
-                println(t.message ?: "")
+                Log.v(TAG, t.message ?: "")
             }
         })
     }

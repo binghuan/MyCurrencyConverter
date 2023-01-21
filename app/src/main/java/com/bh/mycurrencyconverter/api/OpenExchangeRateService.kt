@@ -1,6 +1,6 @@
-package com.bh.mycurrencyconveter.api
+package com.bh.mycurrencyconverter.api
 
-import com.bh.mycurrencyconveter.vo.ExchangeRatesAPIResponse
+import com.bh.mycurrencyconverter.vo.ExchangeRatesAPIResponse
 import retrofit2.Call
 import retrofit2.http.GET
 
