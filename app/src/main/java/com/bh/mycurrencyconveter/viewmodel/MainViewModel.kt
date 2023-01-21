@@ -15,8 +15,6 @@ import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
@@ -30,12 +28,12 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
     private var _positionForUSD: Int = 0
     private var baseCurrency = MutableLiveData<String>(DEFAULT_BASE_CURRENCY)
-    var exchangeRates = MutableLiveData<HashMap<String, Double>>()
+    var exchangeRates = MutableLiveData<Map<String, Double>>()
     var calculatedExchangeRates = MutableLiveData<ArrayList<ExchangeRateItem>>()
 
     var currencyList = MutableLiveData<ArrayList<String>>()
 
-    private fun getExchangeRates(): HashMap<String, Double>? {
+    private fun getExchangeRates(): Map<String, Double>? {
         return exchangeRates.value
     }
 
@@ -70,17 +68,48 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         val dataList = ArrayList<ExchangeRate>()
         for ((currency, amount) in rates) {
             println("$currency = $amount")
-            dataList.add(ExchangeRate(
-                currency = currency,
-                usdConvertibleAmount = amount,
-                timestamp = timestamp ?: -1
-            ))
+            dataList.add(
+                ExchangeRate(
+                    currency = currency,
+                    usdConvertibleAmount = amount,
+                    timestamp = timestamp ?: -1
+                )
+            )
         }
-        dataSource.insertExchangeRateList(dataList)
+
+        insertExchangeRatesIntoDB(dataList)
+    }
+
+    private fun insertExchangeRatesIntoDB(dataList: List<ExchangeRate>) {
+        // Subscribe to updating the user name.
+        // Enable back the button once the user name has been updated
+        disposable.add(
+            dataSource.insertExchangeRateList(dataList)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        println("Data has been inserted. ")
+                    },
+                    { error ->
+                        println("Unable to update username $error")
+                    })
+        )
     }
 
     private fun getCurrencyList(): ArrayList<String>? {
         return currencyList.value
+    }
+
+    private fun extractCurrencies(rates: List<ExchangeRate>) {
+        val currencies = ArrayList<String>()
+        for (exchangeRate in rates) {
+            currencies.add(exchangeRate.currency)
+        }
+        println("currencyList = $currencies")
+        currencies.sort()
+        _positionForUSD = getItemPositionTargetCurrency(currencies, "USD")
+        currencyList.postValue(currencies)
     }
 
     private fun extractCurrencies(rates: HashMap<String, Double>) {
@@ -95,20 +124,29 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         currencyList.postValue(currencies)
     }
 
+    private val disposable = CompositeDisposable()
+
     fun fetchData() {
         // Subscribe to the emissions of the user name from the view model.
         // Update the user name text view, at every onNext emission.
         // In case of error, log the exception.
-        val disposable = CompositeDisposable()
         disposable.add(
             fetchDataFromDB()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    {
-                        println("Fetched data: $it")
-                        if (it.isEmpty()) {
+                    { listOfExchangeRate ->
+                        println("Fetched data: $listOfExchangeRate")
+                        if (listOfExchangeRate.isEmpty()) {
+                            println("!! There is no data in database. we should fetch data from network.")
                             retrieveLatestExchangeRateInfo()
+                        } else {
+                            println("!! There is data in database. we need to re-use it.")
+                            extractCurrencies(listOfExchangeRate)
+                            val dataMap = listOfExchangeRate.map {
+                                it.currency to it.usdConvertibleAmount
+                            }.toMap()
+                            exchangeRates.postValue(dataMap)
                         }
                     },
                     { error ->
@@ -132,8 +170,6 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                 response: Response<ExchangeRatesAPIResponse?>
             ) {
                 println("Received Response")
-
-
                 val timestamp = response.body()?.timestamp
                 response.body()?.rates?.let {
                     extractCurrencies(it)

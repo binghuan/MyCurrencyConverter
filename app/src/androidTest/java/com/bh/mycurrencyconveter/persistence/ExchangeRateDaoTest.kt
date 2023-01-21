@@ -62,8 +62,40 @@ class ExchangeRateDaoTest {
     }
 
     @Test
+    fun insertMultipleExchangeRatesAndGetThemBack() {
+
+        val dataList = ArrayList<ExchangeRate>()
+        dataList.add(
+            ExchangeRate(
+                currency = "TWD",
+                usdConvertibleAmount = 30.0,
+                timestamp = 1674290532064
+            )
+        )
+        dataList.add(
+            ExchangeRate(
+                currency = "EUR",
+                usdConvertibleAmount = 0.92,
+                timestamp = 1674290532064
+            )
+        )
+
+        // When inserting list of exchange rates new user in the data source
+        database.exchangeRateDao().insertExchangeRateList(dataList).blockingAwait()
+
+        // When subscribing to the emissions of the user
+        database.exchangeRateDao().getAllExchangeRates()
+            .test()
+            // assertValue asserts that there was only one emission of the user
+            .assertValue {
+                (it[0].currency == "TWD" || it[0].currency == "EUR") &&
+                        (it[1].currency == "TWD" || it[1].currency == "EUR")
+            }
+    }
+
+    @Test
     fun insertAndGetExchangeRate() {
-        // When inserting a new user in the data source
+        // When inserting a new data in the data source
         database.exchangeRateDao().insertExchangeRate(EX_RATE).blockingAwait()
 
         // When subscribing to the emissions of the user

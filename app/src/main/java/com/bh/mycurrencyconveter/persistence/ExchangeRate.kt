@@ -4,9 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "exchange_rates")
+@Entity(tableName = "exchange_rates", primaryKeys = ["currency", "timestamp"])
 data class ExchangeRate(
-    @PrimaryKey
     @ColumnInfo(name = "currency")
     val currency: String,
     @ColumnInfo(name = "usd_convertible_amount")
