@@ -34,8 +34,7 @@ class MainFragment : Fragment() {
         println("adapterOnClick: $exchangeRateItem")
 
         val position = viewModel.getItemPositionTargetCurrency(
-            viewModel.getCurrencyList() ?: ArrayList(),
-            exchangeRateItem.currency
+            viewModel.getCurrencyList() ?: ArrayList(), exchangeRateItem.currency
         )
         if (position > 0) {
             changeBaseCurrency(position)
@@ -60,8 +59,7 @@ class MainFragment : Fragment() {
             inputValue = binding.baseValue.text.toString().toDouble()
         }
         viewModel.calculateExchangeRateForCurrencies(
-            inputValue = inputValue,
-            baseCurrency = currency
+            inputValue = inputValue, baseCurrency = currency
         )
     }
 
@@ -89,10 +87,7 @@ class MainFragment : Fragment() {
             object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
                 override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
+                    parent: AdapterView<*>?, view: View?, position: Int, id: Long
                 ) {
                     println("onItemSelected: $position")
                     changeBaseCurrency(position)
@@ -104,9 +99,7 @@ class MainFragment : Fragment() {
             viewLifecycleOwner
         ) { currencyList ->
             val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
-                requireContext(),
-                simple_spinner_dropdown_item,
-                currencyList
+                requireContext(), simple_spinner_dropdown_item, currencyList
             )
             adapter.setDropDownViewResource(simple_spinner_dropdown_item)
             binding.targetCurrencySelector.adapter = adapter
