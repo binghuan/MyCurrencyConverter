@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "MyCurrencyConveter"
+rootProject.name = "MyCurrencyConverter"
 include ':app'
