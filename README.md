@@ -8,14 +8,14 @@ A currency conversion app that allow a user to view a given amount in a given cu
 ## Table of Contents
 - [MyCurrencyConverter](#mycurrencyconverter)
   - [Table of Contents](#table-of-contents)
-  - [Features:](#features)
+  - [Features](#features)
   - [File Structure](#file-structure)
   - [API to get latest currency exchange rates](#api-to-get-latest-currency-exchange-rates)
   - [Android Test for Dao](#android-test-for-dao)
   - [Illustration](#illustration)
   - [DEMO](#demo)
 
-## Features:
+## Features
 - The user is be able to select a currency from a list of currencies
 - The user is be able to enter the desired amount for the selected currency
 - A list showing the desired amount in the selected currency converted into amounts in each currency
