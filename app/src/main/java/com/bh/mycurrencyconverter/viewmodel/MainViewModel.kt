@@ -197,11 +197,8 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
 
             val baseExchangeRate = it[baseCurrency]
             val baseCurrencyToUSD = 1 / baseExchangeRate!!
-
             val currencies = getCurrencyList() ?: ArrayList()
-
             if (baseExchangeRate != 1.0) {
-
                 for (currency in currencies) {
                     val exchangeRate = it[currency]
                     val currencyToUSD = 1 / exchangeRate!!
@@ -209,7 +206,6 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
                     if (currency == "USD") {
                         convertedValue = baseExchangeRate * inputValue
                     }
-
                     newExchangeRates.add(
                         ExchangeRateItem(
                             currency = currency, value = convertedValue

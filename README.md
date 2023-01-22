@@ -11,6 +11,7 @@ A currency conversion app that allow a user to view a given amount in a given cu
   - [Features](#features)
   - [File Structure](#file-structure)
   - [API to get latest currency exchange rates](#api-to-get-latest-currency-exchange-rates)
+  - [Conversion Method](#conversion-method)
   - [Android Test for Dao](#android-test-for-dao)
   - [Illustration](#illustration)
   - [DEMO](#demo)
@@ -25,6 +26,9 @@ A currency conversion app that allow a user to view a given amount in a given cu
 
 ## API to get latest currency exchange rates
 ![](README/api.png)
+
+## Conversion Method
+![](README/conversion_method.png)
 
 ## Android Test for Dao
 ![](README/android_test_for_dao.png)
