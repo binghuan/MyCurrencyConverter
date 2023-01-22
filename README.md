@@ -3,7 +3,7 @@
 ================================================
 
 A currency conversion app that allow a user to view a given amount in a given currency converted into other currencies.  
-(It's also a coding challenge from PayPal)
+(It's a coding challenge from PayPal)
 [Here is the requirements for the home assignment.](README/requirements.pdf)
 
 ## Table of Contents
