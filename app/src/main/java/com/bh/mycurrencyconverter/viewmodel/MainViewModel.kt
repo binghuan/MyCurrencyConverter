@@ -47,7 +47,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         }
     }
 
-    private fun getItemPositionTargetCurrency(
+    fun getItemPositionTargetCurrency(
         currencies: List<String>, targetCurrency: String
     ): Int {
         for ((index, value) in currencies.withIndex()) {
@@ -58,7 +58,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         return 0
     }
 
-    fun getPositionForUSD(): Int {
+    fun getItemPositionForUSD(): Int {
         return _positionForUSD
     }
 
@@ -93,7 +93,7 @@ class MainViewModel(private val dataSource: ExchangeRateDao) : ViewModel() {
         )
     }
 
-    private fun getCurrencyList(): ArrayList<String>? {
+    fun getCurrencyList(): ArrayList<String>? {
         return currencyList.value
     }
 

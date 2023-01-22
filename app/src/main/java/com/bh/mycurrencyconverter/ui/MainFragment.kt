@@ -31,12 +31,38 @@ class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
 
     private fun adapterOnClick(exchangeRateItem: ExchangeRateItem) {
+        println("adapterOnClick: $exchangeRateItem")
 
+        val position = viewModel.getItemPositionTargetCurrency(
+            viewModel.getCurrencyList() ?: ArrayList(),
+            exchangeRateItem.currency
+        )
+        if (position > 0) {
+            changeBaseCurrency(position)
+            binding.targetCurrencySelector.setSelection(position)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModelFactory = Injection.provideViewModelFactory(requireContext())
+    }
+
+    private fun changeBaseCurrency(itemPosition: Int) {
+        val currency = viewModel.getCurrencyFromItemPosition(itemPosition)
+        if (viewModel.getBaseCurrency() == currency) {
+            return
+        }
+        println("changeBaseCurrency: position=$itemPosition, currency=$currency")
+        viewModel.setBaseCurrency(currency)
+        var inputValue = 0.0
+        if (binding.baseValue.text.toString().isNotEmpty()) {
+            inputValue = binding.baseValue.text.toString().toDouble()
+        }
+        viewModel.calculateExchangeRateForCurrencies(
+            inputValue = inputValue,
+            baseCurrency = currency
+        )
     }
 
     override fun onCreateView(
@@ -68,17 +94,8 @@ class MainFragment : Fragment() {
                     position: Int,
                     id: Long
                 ) {
-                    val currency = viewModel.getCurrencyFromItemPosition(position)
-                    println("onItemSelected: position=$position, currency=$currency")
-                    viewModel.setBaseCurrency(currency)
-                    var inputValue = 0.0
-                    if (binding.baseValue.text.toString().isNotEmpty()) {
-                        inputValue = binding.baseValue.text.toString().toDouble()
-                    }
-                    viewModel.calculateExchangeRateForCurrencies(
-                        inputValue = inputValue,
-                        baseCurrency = currency
-                    )
+                    println("onItemSelected: $position")
+                    changeBaseCurrency(position)
                 }
             }
 
@@ -93,7 +110,7 @@ class MainFragment : Fragment() {
             )
             adapter.setDropDownViewResource(simple_spinner_dropdown_item)
             binding.targetCurrencySelector.adapter = adapter
-            binding.targetCurrencySelector.setSelection(viewModel.getPositionForUSD())
+            binding.targetCurrencySelector.setSelection(viewModel.getItemPositionForUSD())
         }
         viewModel.calculatedExchangeRates.observe(viewLifecycleOwner) {
             exchangeRateInfoAdapter.submitList(it)
