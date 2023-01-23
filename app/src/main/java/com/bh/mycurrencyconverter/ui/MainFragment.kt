@@ -16,7 +16,6 @@ import com.bh.mycurrencyconverter.databinding.FragmentMainBinding
 import com.bh.mycurrencyconverter.viewmodel.MainViewModel
 import com.bh.mycurrencyconverter.vo.ExchangeRateItem
 
-
 class MainFragment : Fragment() {
 
     companion object {
@@ -106,6 +105,7 @@ class MainFragment : Fragment() {
             binding.targetCurrencySelector.setSelection(viewModel.getItemPositionForUSD())
         }
         viewModel.calculatedExchangeRates.observe(viewLifecycleOwner) {
+            binding.progressBar.visibility = View.GONE
             exchangeRateInfoAdapter.submitList(it)
         }
         viewModel.exchangeRates.observe(viewLifecycleOwner) {
