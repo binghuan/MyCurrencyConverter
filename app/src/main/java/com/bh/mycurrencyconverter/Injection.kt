@@ -10,13 +10,13 @@ import com.bh.mycurrencyconverter.ui.ViewModelFactory
  */
 object Injection {
 
-    private fun provideUserDataSource(context: Context): ExchangeRateDao {
+    private fun provideOpenExchangeRateDataSource(context: Context): ExchangeRateDao {
         val database = ExchangeRateDatabase.getInstance(context)
         return database.exchangeRateDao()
     }
 
     fun provideViewModelFactory(context: Context): ViewModelFactory {
-        val dataSource = provideUserDataSource(context)
+        val dataSource = provideOpenExchangeRateDataSource(context)
         return ViewModelFactory(dataSource)
     }
 }
