@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object OpenExchangeRateServiceInstance {
 
-    private const val BASE_URL = "https://openexchangerates.org/"
+    const val BASE_URL = "https://openexchangerates.org/"
 
     private var retrofit: Retrofit? = null
 

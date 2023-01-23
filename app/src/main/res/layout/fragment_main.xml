@@ -27,6 +27,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <EditText
+                    android:hint="@string/your_desired_amount"
                     android:id="@+id/baseValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
