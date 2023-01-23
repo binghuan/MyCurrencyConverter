@@ -14,7 +14,7 @@ A currency conversion app that allow a user to view a given amount in a given cu
   - [APIs](#apis)
   - [Conversion Method](#conversion-method)
   - [Control Flow](#control-flow)
-  - [Android Test for Dao](#android-test-for-dao)
+  - [Test Cases](#test-cases)
   - [Illustration](#illustration)
   - [DEMO](#demo)
 
@@ -35,7 +35,11 @@ A currency conversion app that allow a user to view a given amount in a given cu
 ## Control Flow
 ![](README/control_flow.png)
 
-## Android Test for Dao
+## Test Cases
+- ExampleInstrumentedTest.kt
+- OpenExchangeRateServiceTest.kt
+- ExchangeRateDaoTest.kt
+
 ![](README/android_test_for_dao.png)
 
 ## Illustration
