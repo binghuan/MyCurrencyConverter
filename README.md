@@ -1,6 +1,6 @@
 ![](icon.png)
 # MyCurrencyConverter
-================================================
+=================================
 
 A currency conversion app that allow a user to view a given amount in a given currency converted into other currencies.  
 (It's a coding challenge from PayPal)
