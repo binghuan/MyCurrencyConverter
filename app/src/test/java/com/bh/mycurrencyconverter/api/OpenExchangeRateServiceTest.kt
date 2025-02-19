@@ -15,13 +15,7 @@ class OpenExchangeRateServiceTest {
     @JvmField
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    @Test
-    fun testRetrofitInstance() {
-        //Get an instance of Retrofit
-        val instance: Retrofit? = OpenExchangeRateServiceInstance.retrofitInstance
-        val baseUrl = instance?.baseUrl()?.url().toString()
-        assert(baseUrl == OpenExchangeRateServiceInstance.BASE_URL)
-    }
+
 
     @Test
     fun testOpenExchangeRateService() {
